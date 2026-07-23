@@ -1,6 +1,6 @@
 <?php
 declare(strict_types=1);
-require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../lib/auth.php';
 auth_require();
 $usuario = auth_get_user();
 ?>
@@ -21,7 +21,7 @@ $usuario = auth_get_user();
 
 <body>
     <div class="d-flex">
-        <?php include __DIR__ . '/includes/sidebar.php'; ?>
+        <?php include __DIR__ . '/../lib/sidebar.php'; ?>
 
         <div id="content" class="w-100" style="margin-left: 280px;">
             <nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm p-3 mb-4">

@@ -18,7 +18,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 error_reporting(E_ERROR | E_PARSE);
 
-require_once __DIR__ . '/conexion.php';
+require_once __DIR__ . '/../lib/conexion.php';
 
 $method = $_SERVER['REQUEST_METHOD'];
 $input = json_decode(file_get_contents('php://input'), true);

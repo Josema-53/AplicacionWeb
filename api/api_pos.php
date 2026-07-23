@@ -18,8 +18,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 
 error_reporting(E_ERROR | E_PARSE);
 
-require_once __DIR__ . '/conexion.php';
-require_once __DIR__ . '/auth.php';
+require_once __DIR__ . '/../lib/conexion.php';
+require_once __DIR__ . '/../lib/auth.php';
 
 $user = auth_get_user();
 if (!$user) {
