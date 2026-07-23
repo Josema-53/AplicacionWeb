@@ -5,7 +5,7 @@ $host = getenv('DB_HOST') ?: 'localhost';
 $port = getenv('DB_PORT') ?: '3306';
 $user = getenv('DB_USER') ?: 'root';
 $password = getenv('DB_PASS') ?: '';
-$database = getenv('DB_NAME') ?: 'sys';
+$database = getenv('DB_NAME') ?: 'BDVentas';
 $charset = 'utf8mb4';
 
 $dns = "mysql:host=$host;port=$port;dbname=$database;charset=$charset";
@@ -16,6 +16,10 @@ $opciones = [
     PDO::ATTR_EMULATE_PREPARES => false,
     PDO::ATTR_TIMEOUT => 10,
 ];
+
+if ($host !== 'localhost' && $host !== '127.0.0.1') {
+    $opciones[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
+}
 
 try {
     $pdo = new PDO($dns, $user, $password, $opciones);
