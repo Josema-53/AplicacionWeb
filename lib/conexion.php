@@ -18,6 +18,7 @@ $opciones = [
 ];
 
 if ($host !== 'localhost' && $host !== '127.0.0.1') {
+    $opciones[PDO::MYSQL_ATTR_SSL_CA] = '';
     $opciones[PDO::MYSQL_ATTR_SSL_VERIFY_SERVER_CERT] = false;
 }
 
