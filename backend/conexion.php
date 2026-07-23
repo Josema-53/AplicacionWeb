@@ -1,9 +1,9 @@
 <?php
     declare(strict_types=1);
 
-    $host = 'localhost';
-    $user = 'root';
-    $password = '';
+    $host = 'gateway01.us-east-1.prod.aws.tidbcloud.com';
+    $user = 'jePixA9eWecvF7W.root';
+    $password = 'xAxfbihqdA6Irv1o';
     $database = 'bdventas';
     $charset = 'utf8mb4';
 
