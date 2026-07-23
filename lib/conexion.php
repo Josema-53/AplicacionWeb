@@ -5,7 +5,7 @@ $host = getenv('DB_HOST') ?: 'localhost';
 $port = getenv('DB_PORT') ?: '3306';
 $user = getenv('DB_USER') ?: 'root';
 $password = getenv('DB_PASS') ?: '';
-$database = getenv('DB_NAME') ?: 'bdventas';
+$database = getenv('DB_NAME') ?: 'sys';
 $charset = 'utf8mb4';
 
 $dns = "mysql:host=$host;port=$port;dbname=$database;charset=$charset";
