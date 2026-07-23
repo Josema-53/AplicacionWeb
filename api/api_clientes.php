@@ -2,7 +2,12 @@
 declare(strict_types=1);
 
 header('Content-Type: application/json; charset=UTF-8');
-header('Access-Control-Allow-Origin: *');
+$origin = $_SERVER['HTTP_ORIGIN'] ?? '';
+if (preg_match('#^https://[a-z0-9-]+\.vercel\.app$#i', $origin)) {
+    header('Access-Control-Allow-Origin: ' . $origin);
+} else {
+    header('Access-Control-Allow-Origin: ' . ($origin ?: '*'));
+}
 header('Access-Control-Allow-Methods: GET, POST, PUT, DELETE, OPTIONS');
 header('Access-Control-Allow-Headers: Content-Type');
 
@@ -10,6 +15,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
     exit();
 }
+
+error_reporting(E_ERROR | E_PARSE);
 
 require_once __DIR__ . '/conexion.php';
 
@@ -33,8 +40,7 @@ try {
                 CASE WHEN COUNT(v.id) > 0 THEN COALESCE(SUM(v.total_factura), 0) / COUNT(v.id) ELSE 0 END AS promedio_factura,
                 MIN(v.fecha_emision) AS primera_compra,
                 MAX(v.fecha_emision) AS ultima_compra
-            FROM ventas v
-            WHERE v.cliente_id = :cliente_id AND v.estado = 'Pagada'
+            FROM ventas v WHERE v.cliente_id = :cliente_id AND v.estado = 'Pagada'
         ");
         $stmtResumen->execute([':cliente_id' => $clienteId]);
         $resumen = $stmtResumen->fetch(PDO::FETCH_ASSOC);
@@ -55,82 +61,65 @@ try {
         $productos = $stmtProductos->fetchAll(PDO::FETCH_ASSOC);
 
         $stmtHistorial = $pdo->prepare("
-            SELECT v.id, v.fecha_emision, v.total_factura, v.estado,
-                   v.subtotal, v.iva
-            FROM ventas v
-            WHERE v.cliente_id = :cliente_id
-            ORDER BY v.fecha_emision DESC
-            LIMIT 50
+            SELECT v.id, v.fecha_emision, v.total_factura, v.estado, v.subtotal, v.iva
+            FROM ventas v WHERE v.cliente_id = :cliente_id
+            ORDER BY v.fecha_emision DESC LIMIT 50
         ");
         $stmtHistorial->execute([':cliente_id' => $clienteId]);
         $historial = $stmtHistorial->fetchAll(PDO::FETCH_ASSOC);
 
-        echo json_encode([
-            'resumen'   => $resumen,
-            'productos' => $productos,
-            'historial' => $historial
-        ]);
+        echo json_encode(['resumen' => $resumen, 'productos' => $productos, 'historial' => $historial]);
         exit();
     }
 
     switch ($method) {
         case 'GET':
             $search = $_GET['q'] ?? '';
-            $sql = 'SELECT * FROM clientes WHERE nombre_completo LIKE ? OR cedula LIKE ? OR correo LIKE ? OR telefono LIKE ?';
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->prepare("SELECT * FROM clientes WHERE nombre_completo LIKE ? OR cedula LIKE ? OR correo LIKE ? OR telefono LIKE ?");
             $stmt->execute(["%$search%", "%$search%", "%$search%", "%$search%"]);
             echo json_encode($stmt->fetchAll(PDO::FETCH_ASSOC));
             break;
-
         case 'POST':
-            $sql = 'INSERT INTO clientes (nombre_completo, cedula, correo, telefono) VALUES (:nombre_completo, :cedula, :correo, :telefono)';
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->prepare("INSERT INTO clientes (nombre_completo, cedula, correo, telefono) VALUES (:nombre_completo, :cedula, :correo, :telefono)");
             $stmt->execute([
                 ':nombre_completo' => $input['nombre_completo'],
-                ':cedula'          => $input['cedula'],
-                ':correo'          => $input['correo'] ?: null,
-                ':telefono'        => $input['telefono'] ?: null
+                ':cedula' => $input['cedula'],
+                ':correo' => $input['correo'] ?: null,
+                ':telefono' => $input['telefono'] ?: null
             ]);
             echo json_encode(['message' => 'Cliente creado con exito', 'id' => (int)$pdo->lastInsertId()]);
             break;
-
         case 'PUT':
-            $esConsumidor = (int)$input['id'] === 7;
-            if ($esConsumidor) {
+            if ((int)$input['id'] === 7) {
                 http_response_code(403);
-                echo json_encode(['error' => 'No se puede editar el cliente CONSUMIDOR FINAL (es un registro del sistema)']);
+                echo json_encode(['error' => 'No se puede editar el cliente CONSUMIDOR FINAL']);
                 break;
             }
-            $sql = 'UPDATE clientes SET nombre_completo = :nombre_completo, cedula = :cedula, correo = :correo, telefono = :telefono WHERE id = :id';
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->prepare("UPDATE clientes SET nombre_completo = :nombre_completo, cedula = :cedula, correo = :correo, telefono = :telefono WHERE id = :id");
             $stmt->execute([
-                ':id'              => $input['id'],
+                ':id' => $input['id'],
                 ':nombre_completo' => $input['nombre_completo'],
-                ':cedula'          => $input['cedula'],
-                ':correo'          => $input['correo'] ?: null,
-                ':telefono'        => $input['telefono'] ?: null
+                ':cedula' => $input['cedula'],
+                ':correo' => $input['correo'] ?: null,
+                ':telefono' => $input['telefono'] ?: null
             ]);
             echo json_encode(['message' => 'Cliente actualizado con exito']);
             break;
-
         case 'DELETE':
-            $esConsumidor = (int)$input['id'] === 7;
-            if ($esConsumidor) {
+            if ((int)$input['id'] === 7) {
                 http_response_code(403);
-                echo json_encode(['error' => 'No se puede eliminar el cliente CONSUMIDOR FINAL (es un registro del sistema)']);
+                echo json_encode(['error' => 'No se puede eliminar el cliente CONSUMIDOR FINAL']);
                 break;
             }
-            $sql = 'DELETE FROM clientes WHERE id = :id';
-            $stmt = $pdo->prepare($sql);
+            $stmt = $pdo->prepare("DELETE FROM clientes WHERE id = :id");
             $stmt->execute([':id' => $input['id']]);
             echo json_encode(['message' => 'Cliente eliminado con exito']);
             break;
-
         default:
             http_response_code(405);
             echo json_encode(['error' => 'Metodo no permitido']);
     }
 } catch (PDOException $e) {
     http_response_code(500);
-    echo json_encode(['error' => 'Error en la base de datos: ' . $e->getMessage()]);
+    echo json_encode(['error' => 'Error interno del servidor']);
 }

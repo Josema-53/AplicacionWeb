@@ -8,26 +8,23 @@ if ($user) {
 ?>
 <!DOCTYPE html>
 <html lang="es">
-
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Acceso al Sistema</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet"
-        integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet">
 </head>
-
-<body class="bg-light d-flex align-items-center justify-content-center vh-1000">
-    <div class="card-shadow p-4" style="width:100% ; max-width: 400px;">
-
+<body class="bg-light d-flex align-items-center justify-content-center vh-100">
+    <div class="card shadow p-4" style="width:100%; max-width: 400px;">
         <div class="text-center mb-4">
             <h3 class="text-primary">SISTEMA POS</h3>
-            <p class="text-muted">Ingrese su nombre de usuario y contrasena para acceder al sistema.</p>
+            <p class="text-muted">Ingrese su usuario y contrasena para acceder.</p>
         </div>
 
-        <?php if(isset($_GET['error'])): ?>
-            <div class="alert alert-danger" role="alert">
-               Usuario o contrasena incorrectos.
+        <?php if(isset($_GET['locked'])): ?>
+            <div class="alert alert-danger" role="alert">Demasiados intentos. Intente de nuevo en 5 minutos.</div>
+        <?php elseif(isset($_GET['error'])): ?>
+            <div class="alert alert-danger" role="alert">Usuario o contrasena incorrectos.</div>
         <?php endif; ?>
 
         <form method="POST" action="/procesar_login.php">
@@ -41,8 +38,6 @@ if ($user) {
             </div>
             <button type="submit" class="btn btn-primary w-100">Iniciar Sesion</button>
         </form>
-
     </div>
-
 </body>
 </html>

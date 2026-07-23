@@ -2,17 +2,19 @@
 declare(strict_types=1);
 
 $host = getenv('DB_HOST') ?: 'localhost';
+$port = getenv('DB_PORT') ?: '3306';
 $user = getenv('DB_USER') ?: 'root';
 $password = getenv('DB_PASS') ?: '';
 $database = getenv('DB_NAME') ?: 'bdventas';
 $charset = 'utf8mb4';
 
-$dns = "mysql:host=$host;dbname=$database;charset=$charset";
+$dns = "mysql:host=$host;port=$port;dbname=$database;charset=$charset";
 
 $opciones = [
     PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
     PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
     PDO::ATTR_EMULATE_PREPARES => false,
+    PDO::ATTR_TIMEOUT => 10,
 ];
 
 try {
